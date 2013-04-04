@@ -1,0 +1,85 @@
+ircbotframe.py is an IRC bot framework written in python.
+
+To use this, import the `ircBot` class from ircbotframe.py
+
+Example usage
+=============
+
+First, create the bot object with the constructor:
+
+    bot = ircBot(<irc netwrok address>, <port>, <bot name>, <bot description>)
+
+Next, bind functions to the various IRC message types. These functions will be called when the IRC bot receives messages with those message types. The function to be called should be of the form:
+
+    funcname(sender, header, message)
+    
+These can then be bound using:
+
+    bot.bind(<messsage type>, <funcname>) 
+    
+Once functions have been bound, connect the irc bot to the server using:
+
+    bot.connect()
+    
+Then join a / some channel(s) using:
+
+    bot.joinchan(<channel name>)
+    
+where `channel name` begins with the `#` character. Finally, make the bot start listening to messages with:
+
+    bot.run()
+
+Bot methods
+===========
+
+    ban (banMask, channel, reason)
+
+Bans and kicks users satistfying the ban mask `banMask` from `channel` with a given `reason` (optional). Only works if the bot has operator privileges in `channel`.
+
+    bind (msgtype, callback)
+
+This command binds a particular message type `msgtype` (passed as a string) to a given <callback> function. If the bot hears a message with this message type, the corresponding function will be called. The `callback` function MUST be of the form `funcname(sender, headers, message)` where `sender` is the nick of the entity that sent the message, `headers` is a list of any additional message headers before the message content and `message` is the actual message content. Bind can be used to listen for both server and user message types (bear in mind that server message types are usually numeric strings). Bind only allows a single function to be bound to each message type.
+
+    connect ()
+
+Makes the bot connect to the specified irc server.
+    
+    debug (state)
+
+Sets the bot's debug state to `state` which is a boolean value.
+
+    disconnect (qMessage)
+
+Makes the bot disconnect from the irc server with the quit message `qMessage` (for no quit message, put an empty string)
+    
+    identify (nick, callbackApproved, approvedParameters, callbackDenied, deniedParameters)
+    
+where `callbackApproved` and `callbackDenied` are of the form `funcname(parameter 1, parameter 2, ...)`. Used for checking whether or not a user with the nickname `nick` is who they say they are by checking their `WHOIS` info from the server. If they are verified, the function `callbackApproved` will be called with the parameters `approvedParameters` (which will fill `parameter 1`, `parameter 2`, etc. in order). If they cannot be verified or are not registered, then `callbackDenied` is called with `deniedParameters`. Parameter lists `approvedParameters` and `deniedParameters` are tuples with the tuple items matching the `callbackApproved` and `callbackDenied` function parameters in order from the second parameter. For example, `identify(nick, approved, (string, integer1), denied, (integer2))`. If the nick is verified the following function will be called: `approved(string, integer1)`. Otherwise the other function will be called: `denied(integer2)`
+
+    joinchan (channel)
+
+Makes the bot join a given channel. `channel` *must* start with a `#` character.
+    
+    kick (nick, channel, reason)
+
+If the bot has operator privileges in the channel `channel`, the user with `nick` will be kicked from it with the given reason <reason>.
+
+    reconnect ()
+
+Disconnects from the server then reconnects. It disconnects with the quit message "Reconnecting".
+
+    run ()
+
+Tells the bot to start listening to the messages it receives and to act upon the input using functions connected to the bindings using the command `bind()`. The bot starts listening on a new thread and so is not a blocking call. Any bot functions you wish to call must be called by functions connected to bindings (using the command `bind()`).
+    
+    say (recipient, message)
+
+The bot says the given message `message` to the recipient `recipient`. The recipient can be a channel (and should start with a `#` character if this is the case).
+
+    send (string)
+
+Sends a raw IRC message given by `string` to the server. Can have dire consequences if your message is not formatted correctly. It is advised that you consult the IRC specification in RFC 1459.
+    
+    stop ()
+
+Stops the IRC bot from running. You should disconnect from the server first. The bot's thread will terminate naturally. Should you wish to use the bot's thread `join()` function, `stop()` should be called first.
