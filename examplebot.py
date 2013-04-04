@@ -45,10 +45,10 @@ def privmsg(sender, headers, message):
         if sender == owner:
             bot.identify(sender, kickSuccess, (message[6:firstSpace], message[firstSpace+1:secondSpace], message[secondSpace+1:]), authFailure, (headers[0], sender))
     else:
-        print "PRIVMSG: \"" + message + "\""
+        print("PRIVMSG: \"" + message + "\"")
             
 def actionmsg(sender, headers, message):
-    print "An ACTION message was sent by " + sender + " with the headers " + str(headers) + ". It says: \"" + sender + " " + message + "\""
+    print("An ACTION message was sent by " + sender + " with the headers " + str(headers) + ". It says: \"" + sender + " " + message + "\"")
 
 def endMOTD(sender, headers, message):
     bot.joinchan(chanName)
@@ -76,10 +76,10 @@ if __name__ == "__main__":
         bot.start()
         inputStr = "" 
         while inputStr != "stop":
-            inputStr = raw_input()
+            inputStr = input()
         bot.stop()
         bot.join()
     else:
-        print "Usage: python examplebot.py <server> <port> <your IRC nick> <irc channel (no '#' character please)>"
+        print("Usage: python examplebot.py <server> <port> <your IRC nick> <irc channel (no '#' character please)>")
 
 

@@ -1,4 +1,4 @@
-ircbotframe.py is an IRC bot framework written in python.
+ircbotframe.py is an IRC bot framework written in Python 3.
 
 To use this, import the `ircBot` class from ircbotframe.py
 

@@ -35,10 +35,10 @@ class ircOutputBuffer:
         if not self.error:
             try:
                 self.irc.send(bytes(string) + b"\r\n")
-            except socket.error, msg:
+            except socket.error as msg:
                 self.error = True
-                print "Output error", msg
-                print "Was sending \"" + string + "\""
+                print("Output error", msg)
+                print("Was sending \"" + string + "\"")
     def isInError(self):
         return self.error
 
@@ -54,8 +54,8 @@ class ircInputBuffer:
         # Last (incomplete) line is kept for buffer purposes.
         try:
             data = self.buffer + self.irc.recv(4096)
-        except socket.error, msg:
-            raise socket.error, msg
+        except socket.error as msg:
+            raise socket.error(msg)
         self.lines += data.split(b"\r\n")
         self.buffer = self.lines[len(self.lines) - 1]
         self.lines = self.lines[:len(self.lines) - 1]
@@ -65,8 +65,8 @@ class ircInputBuffer:
         while len(self.lines) == 0:
             try:
                 self.__recv()
-            except socket.error, msg:
-                raise socket.error, msg
+            except socket.error as msg:
+                raise socket.error(msg)
             time.sleep(1);
         line = self.lines[0]
         self.lines = self.lines[1:]
@@ -160,7 +160,7 @@ class ircBot(threading.Thread):
                 
     def __debugPrint(self, s):
         if self.debug:
-            print s
+            print(s)
     # PUBLIC FUNCTIONS
     def ban(self, banMask, channel, reason):
         self.__debugPrint("Banning " + banMask + "...")
@@ -169,7 +169,7 @@ class ircBot(threading.Thread):
         
     def bind(self, msgtype, callback):
         # Check if the msgtype already exists
-        for i in xrange(0, len(self.binds)):
+        for i in range(0, len(self.binds)):
             # Remove msgtype if it has already been "binded" to 
             if self.binds[i][0] == msgtype:
                 self.binds.remove(i)
@@ -214,8 +214,8 @@ class ircBot(threading.Thread):
             while len(line) == 0:
                 try:
                     line = self.inBuf.getLine()
-                except socket.error, msg:
-                    print "Input error", msg
+                except socket.error as msg:
+                    print("Input error", msg)
                     self.reconnect()
             if line.startswith("PING"):
                 self.outBuf.sendImmediately("PONG " + line.split()[1])
