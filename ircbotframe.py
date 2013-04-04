@@ -46,7 +46,7 @@ class ircInputBuffer:
     # Keeps a record of the last line fragment received by the socket which is usually not a complete line.
     # It is prepended onto the next block of data to make a complete line.
     def __init__(self, irc):
-        self.buffer = ""
+        self.buffer = b""
         self.irc = irc
         self.lines = []
     def __recv(self):
