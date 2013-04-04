@@ -34,7 +34,7 @@ class ircOutputBuffer:
         # Sends the given string without buffering.
         if not self.error:
             try:
-                self.irc.send(bytes(string) + b"\r\n")
+                self.irc.send(string.encode("utf-8") + b"\r\n")
             except socket.error as msg:
                 self.error = True
                 print("Output error", msg)
