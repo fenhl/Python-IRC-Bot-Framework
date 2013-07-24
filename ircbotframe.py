@@ -90,7 +90,7 @@ class ircBot(threading.Thread):
         self.port = port
         self.identifyNickCommands = []
         self.identifyLock = False
-        self.binds = []
+        self.binds = {}
         self.debug = False
     
     # PRIVATE FUNCTIONS
@@ -119,9 +119,9 @@ class ircBot(threading.Thread):
     
     def __callBind(self, msgtype, sender, headers, message):
         # Calls the function associated with the given msgtype.
-        for (messageType, callback) in self.binds:
-            if (messageType == msgtype):
-                callback(sender, headers, message)
+        callback = self.binds.get(msgtype)
+        if callback:
+            callback(sender, headers, message)
     
     def __processLine(self, line):
         # If a message comes from another user, it will have an @ symbol
@@ -183,12 +183,7 @@ class ircBot(threading.Thread):
         #self.kick(nick, channel, reason)
     
     def bind(self, msgtype, callback):
-        # Check if the msgtype already exists
-        for i in range(0, len(self.binds)):
-            # Remove msgtype if it has already been "bound" to 
-            if self.binds[i][0] == msgtype:
-                self.binds.remove(i)
-        self.binds.append((msgtype, callback))
+        self.binds[msgtype] = callback
     
     def connect(self):
         self.__debugPrint("Connecting...")
