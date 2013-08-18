@@ -193,7 +193,7 @@ class ircBot(threading.Thread):
         self.inBuf = ircInputBuffer(self.irc)
         self.outBuf = ircOutputBuffer(self.irc)
         if self.password is not None:
-            self.outBut.sendBuffered("PASS " + self.password)
+            self.outBuf.sendBuffered("PASS " + self.password)
         self.outBuf.sendBuffered("NICK " + self.name)
         self.outBuf.sendBuffered("USER " + self.name + " 0 * :" + self.desc)
     
