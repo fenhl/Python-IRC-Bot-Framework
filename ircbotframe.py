@@ -81,11 +81,12 @@ class ircInputBuffer:
         return line
 
 class ircBot(threading.Thread):
-    def __init__(self, network, port, name, description):
+    def __init__(self, network, port, name, description, password=None):
         threading.Thread.__init__(self)
         self.keepGoing = True
         self.name = name
         self.desc = description
+        self.password = password
         self.network = network
         self.port = port
         self.identifyNickCommands = []
@@ -191,6 +192,8 @@ class ircBot(threading.Thread):
         self.irc.connect((self.network, self.port))
         self.inBuf = ircInputBuffer(self.irc)
         self.outBuf = ircOutputBuffer(self.irc)
+        if self.password is not None:
+            self.outBut.sendBuffered("PASS " + self.password)
         self.outBuf.sendBuffered("NICK " + self.name)
         self.outBuf.sendBuffered("USER " + self.name + " 0 * :" + self.desc)
     

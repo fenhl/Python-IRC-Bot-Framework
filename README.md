@@ -7,7 +7,7 @@ Example usage
 
 First, create the bot object with the constructor:
 
-    bot = ircBot(<irc netwrok address>, <port>, <bot name>, <bot description>)
+    bot = ircBot(<irc netwrok address>, <port>, <bot name>, <bot description>[, password=<server password>])
 
 Next, bind functions to the various IRC message types. These functions will be called when the IRC bot receives messages with those message types. The function to be called should be of the form:
 
