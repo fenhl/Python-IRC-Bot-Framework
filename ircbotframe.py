@@ -1,6 +1,7 @@
 import socket
 import threading
 import re
+import ssl
 import time
 
 class ircOutputBuffer:
@@ -81,7 +82,7 @@ class ircInputBuffer:
         return line
 
 class ircBot(threading.Thread):
-    def __init__(self, network, port, name, description, password=None):
+    def __init__(self, network, port, name, description, password=None, ssl=False):
         threading.Thread.__init__(self)
         self.keepGoing = True
         self.name = name
@@ -89,6 +90,7 @@ class ircBot(threading.Thread):
         self.password = password
         self.network = network
         self.port = port
+        self.ssl = ssl
         self.identifyNickCommands = []
         self.identifyLock = False
         self.binds = {}
@@ -189,6 +191,8 @@ class ircBot(threading.Thread):
     def connect(self):
         self.__debugPrint("Connecting...")
         self.irc = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        if self.ssl:
+            self.irc = ssl.wrap_socket(self.irc)
         self.irc.connect((self.network, self.port))
         self.inBuf = ircInputBuffer(self.irc)
         self.outBuf = ircOutputBuffer(self.irc)
