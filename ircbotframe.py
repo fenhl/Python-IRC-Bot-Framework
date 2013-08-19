@@ -156,7 +156,7 @@ class ircBot(threading.Thread):
                 if cut != -1:
                     sender = sender[:cut]
                 msgtype = headers[1]
-                if msgtype == "PRIVMSG" and message.startswith("ACTION ") and message.endswith(""):
+                if msgtype == "PRIVMSG" and message.startswith("\001ACTION ") and message.endswith("\001"):
                     msgtype = "ACTION"
                     message = message[8:-1]
                 self.__callBind(msgtype, sender, headers[2:], message)
