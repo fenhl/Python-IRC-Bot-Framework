@@ -98,6 +98,7 @@ class ircBot(threading.Thread):
         self.binds = {}
         self.debug = False
         self.default_log_length = 200
+        self.log_own_messages = True
         self.channel_data = {}
     
     # PRIVATE FUNCTIONS
@@ -165,9 +166,7 @@ class ircBot(threading.Thread):
                         msgtype = 'ACTION'
                         message = message[8:-1]
                     if headers[2].startswith('#'):
-                        self.channel_data[headers[2]]['log'].append((msgtype, sender, headers[2:], message)) # log PRIVMSG and ACTION only for now
-                        if len(self.channel_data[headers[2]]['log']) > self.channel_data[headers[2]]['log_length']:
-                            self.channel_data[headers[2]]['log'] = self.channel_data[headers[2]]['log'][-self.channel_data[headers[2]]['log_length']:] # trim log to log length if necessary
+                        self.__log(headers[2], msgtype, sender, headers[2:], message) # log PRIVMSG and ACTION only for now
             else:
                 msgtype = headers[1]
                 self.__debugPrint('[' + msgtype + '] ' + message)
@@ -185,6 +184,12 @@ class ircBot(threading.Thread):
     def __debugPrint(self, s):
         if self.debug:
             print(s)
+    
+    def __log(self, channel, msgtype, sender, headers, message):
+        if channel in self.channel_data:
+            self.channel_data[channel]['log'].append((msgtype, sender, headers, message))
+            if len(self.channel_data[channel]['log']) > self.channel_data[channel]['log_length']:
+                self.channel_data[channel]['log'] = self.channel_data[channel]['log'][-self.channel_data[channel]['log_length']:] # trim log to log length if necessary
     
     # PUBLIC FUNCTIONS
     def ban(self, banMask, channel, reason):
@@ -264,6 +269,8 @@ class ircBot(threading.Thread):
                 self.reconnect()
     
     def say(self, recipient, message):
+        if self.log_own_messages:
+            self.__log(recipient, 'PRIVMSG', self.name, [recipient], message)
         self.outBuf.sendBuffered("PRIVMSG " + recipient + " :" + message)
     
     def send(self, string):
