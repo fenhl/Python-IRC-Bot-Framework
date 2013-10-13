@@ -62,6 +62,8 @@ class ircInputBuffer:
             data = self.buffer + self.irc.recv(4096).decode("utf-8")
         except socket.error as msg:
             raise socket.error(msg)
+        except UnicodeDecodeError:
+            data = ''
         self.lines += data.split("\r\n")
         # Last (incomplete) line is kept for buffer purposes.
         self.buffer = self.lines[-1]
@@ -95,6 +97,8 @@ class ircBot(threading.Thread):
         self.identifyLock = False
         self.binds = {}
         self.debug = False
+        self.default_log_length = 200
+        self.channel_data = {}
     
     # PRIVATE FUNCTIONS
     def __identAccept(self, nick):
@@ -156,22 +160,27 @@ class ircBot(threading.Thread):
                 if cut != -1:
                     sender = sender[:cut]
                 msgtype = headers[1]
-                if msgtype == "PRIVMSG" and message.startswith("\001ACTION ") and message.endswith("\001"):
-                    msgtype = "ACTION"
-                    message = message[8:-1]
-                self.__callBind(msgtype, sender, headers[2:], message)
+                if msgtype == 'PRIVMSG':
+                    if message.startswith('\001ACTION ') and message.endswith('\001'):
+                        msgtype = 'ACTION'
+                        message = message[8:-1]
+                    if headers[2].startswith('#'):
+                        self.channel_data[headers[2]]['log'].append((msgtype, sender, headers[2:], message)) # log PRIVMSG and ACTION only for now
+                        if len(self.channel_data[headers[2]]['log']) > self.channel_data[headers[2]]['log_length']:
+                            self.channel_data[headers[2]]['log'] = self.channel_data[headers[2]]['log'][-self.channel_data[headers[2]]['log_length']:] # trim log to log length if necessary
             else:
-                self.__debugPrint("[" + headers[1] + "] " + message)
-                if (headers[1] == "307" or headers[1] == "330") and len(headers) >= 4:
+                msgtype = headers[1]
+                self.__debugPrint('[' + msgtype + '] ' + message)
+                if msgtype in ['307', '330'] and len(headers) >= 4:
                     self.__identAccept(headers[3])
-                if headers[1] == "318" and len(headers) >= 4:
+                if msgtype == '318' and len(headers) >= 4:
                     self.__identReject(headers[3])
                     #identifies the next user in the nick commands list
                     if len(self.identifyNickCommands) == 0:
                         self.identifyLock = False
                     else:
                         self.outBuf.sendBuffered("WHOIS " + self.identifyNickCommands[0][0])
-                self.__callBind(headers[1], sender, headers[2:], message)
+            self.__callBind(msgtype, sender, headers[2:], message)
     
     def __debugPrint(self, s):
         if self.debug:
@@ -220,6 +229,10 @@ class ircBot(threading.Thread):
     
     def joinchan(self, channel):
         self.__debugPrint("Joining " + channel + "...")
+        self.channel_data[channel] = {
+            'log': [],
+            'log_length': self.default_log_length
+        }
         self.outBuf.sendBuffered("JOIN " + channel)
     
     def kick(self, nick, channel, reason):
