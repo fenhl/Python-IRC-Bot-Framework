@@ -166,7 +166,7 @@ class ircBot(threading.Thread):
                         msgtype = 'ACTION'
                         message = message[8:-1]
                     if headers[2].startswith('#'):
-                        self.__log(headers[2], msgtype, sender, headers[2:], message) # log PRIVMSG and ACTION only for now
+                        self.log(headers[2], msgtype, sender, headers[2:], message) # log PRIVMSG and ACTION only for now
             else:
                 msgtype = headers[1]
                 self.__debugPrint('[' + msgtype + '] ' + message)
@@ -185,7 +185,7 @@ class ircBot(threading.Thread):
         if self.debug:
             print(s)
     
-    def __log(self, channel, msgtype, sender, headers, message):
+    def log(self, channel, msgtype, sender, headers, message):
         if channel in self.channel_data:
             self.channel_data[channel]['log'].append((msgtype, sender, headers, message))
             if len(self.channel_data[channel]['log']) > self.channel_data[channel]['log_length']:
@@ -270,7 +270,7 @@ class ircBot(threading.Thread):
     
     def say(self, recipient, message):
         if self.log_own_messages:
-            self.__log(recipient, 'PRIVMSG', self.name, [recipient], message)
+            self.log(recipient, 'PRIVMSG', self.name, [recipient], message)
         self.outBuf.sendBuffered("PRIVMSG " + recipient + " :" + message)
     
     def send(self, string):
