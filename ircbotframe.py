@@ -279,6 +279,9 @@ class ircBot(threading.Thread):
     def stop(self):
         self.keepGoing = False
     
+    def topic(self, channel, message):
+        self.send('TOPIC ' + channel + ' :' + message)
+    
     def unban(self, banMask, channel):
-        self.__debugPrint("Unbanning " + banMask + "...")
-        self.outBuf.sendBuffered("MODE -b " + channel + " " + banMask)
+        self.__debugPrint('Unbanning ' + banMask + '...')
+        self.outBuf.sendBuffered('MODE -b ' + channel + ' ' + banMask)
