@@ -1,6 +1,6 @@
-ircbotframe.py is an IRC bot framework written in Python 3.
+This is an **IRC bot framework written in Python 3**.
 
-To use this, import the `ircBot` class from ircbotframe.py
+To use it, import the `ircBot` class from [`ircbotframe.py`](ircbotframe.py).
 
 Example usage
 =============
@@ -32,54 +32,62 @@ where `channel name` begins with the `#` character. Finally, make the bot start 
 Bot methods
 ===========
 
-    ban (banMask, channel, reason)
+    ban(banMask, channel, reason)
 
 Bans and kicks users satistfying the ban mask `banMask` from `channel` with a given `reason` (optional). Only works if the bot has operator privileges in `channel`.
 
-    bind (msgtype, callback)
+    bind(msgtype, callback)
 
 This command binds a particular message type `msgtype` (passed as a string) to a given <callback> function. If the bot hears a message with this message type, the corresponding function will be called. The `callback` function MUST be of the form `funcname(sender, headers, message)` where `sender` is the nick of the entity that sent the message, `headers` is a list of any additional message headers before the message content and `message` is the actual message content. Bind can be used to listen for both server and user message types (bear in mind that server message types are usually numeric strings). Bind only allows a single function to be bound to each message type.
 
-    connect ()
+    connect()
 
 Makes the bot connect to the specified irc server.
-    
-    debug (state)
+
+    debug(state)
 
 Sets the bot's debug state to `state` which is a boolean value.
 
-    disconnect (qMessage)
+    disconnect(qMessage)
 
 Makes the bot disconnect from the irc server with the quit message `qMessage` (for no quit message, put an empty string)
-    
-    identify (nick, callbackApproved, approvedParameters, callbackDenied, deniedParameters)
+
+    identify(nick, callbackApproved, approvedParameters, callbackDenied, deniedParameters)
     
 where `callbackApproved` and `callbackDenied` are of the form `funcname(parameter 1, parameter 2, ...)`. Used for checking whether or not a user with the nickname `nick` is who they say they are by checking their `WHOIS` info from the server. If they are verified, the function `callbackApproved` will be called with the parameters `approvedParameters` (which will fill `parameter 1`, `parameter 2`, etc. in order). If they cannot be verified or are not registered, then `callbackDenied` is called with `deniedParameters`. Parameter lists `approvedParameters` and `deniedParameters` are tuples with the tuple items matching the `callbackApproved` and `callbackDenied` function parameters in order from the second parameter. For example, `identify(nick, approved, (string, integer1), denied, (integer2))`. If the nick is verified the following function will be called: `approved(string, integer1)`. Otherwise the other function will be called: `denied(integer2)`
 
-    joinchan (channel)
+    joinchan(channel)
 
 Makes the bot join a given channel. `channel` *must* start with a `#` character.
-    
-    kick (nick, channel, reason)
+
+    kick(nick, channel, reason)
 
 If the bot has operator privileges in the channel `channel`, the user with `nick` will be kicked from it with the given reason <reason>.
 
-    reconnect ()
+    reconnect()
 
 Disconnects from the server then reconnects. It disconnects with the quit message "Reconnecting".
 
-    run ()
+    run()
 
 Tells the bot to start listening to the messages it receives and to act upon the input using functions connected to the bindings using the command `bind()`. The bot starts listening on a new thread and so is not a blocking call. Any bot functions you wish to call must be called by functions connected to bindings (using the command `bind()`).
-    
-    say (recipient, message)
+
+    say(recipient, message)
 
 The bot says the given message `message` to the recipient `recipient`. The recipient can be a channel (and should start with a `#` character if this is the case).
 
-    send (string)
+    send(string)
 
 Sends a raw IRC message given by `string` to the server. Can have dire consequences if your message is not formatted correctly. It is advised that you consult the IRC specification in RFC 1459.
-    
-    stop ()
+
+    stop()
 
 Stops the IRC bot from running. You should disconnect from the server first. The bot's thread will terminate naturally. Should you wish to use the bot's thread `join()` function, `stop()` should be called first.
+
+    topic(channel, message)
+
+The bot sets the topic in `channel` to `message`, if it has sufficient privileges.
+
+    unban(banMask, channel)
+
+Unbans previously banned users satistfying the ban mask `banMask` from `channel`. Only works if the bot has operator privileges in `channel`.
