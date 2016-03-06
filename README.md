@@ -7,24 +7,24 @@ Example usage
 
 First, create the bot object with the constructor:
 
-    bot = ircBot(<irc netwrok address>, <port>, <bot name>, <bot description>[, password=<server password>][, ssl=True])
+    bot = ircBot(<irc netwrok address>, <port>, <bot name>, <bot description>[, password=<server password>][, ssl=True][, ip_ver=<4 or 6>])
 
 Next, bind functions to the various IRC message types. These functions will be called when the IRC bot receives messages with those message types. The function to be called should be of the form:
 
     funcname(sender, header, message)
-    
+
 These can then be bound using:
 
-    bot.bind(<messsage type>, <funcname>) 
-    
+    bot.bind(<messsage type>, <funcname>)
+
 Once functions have been bound, connect the irc bot to the server using:
 
     bot.connect()
-    
+
 Then join a / some channel(s) using:
 
     bot.joinchan(<channel name>)
-    
+
 where `channel name` begins with the `#` character. Finally, make the bot start listening to messages with:
 
     bot.run()
@@ -53,7 +53,7 @@ Sets the bot's debug state to `state` which is a boolean value.
 Makes the bot disconnect from the irc server with the quit message `qMessage` (for no quit message, put an empty string)
 
     identify(nick, callbackApproved, approvedParameters, callbackDenied, deniedParameters)
-    
+
 where `callbackApproved` and `callbackDenied` are of the form `funcname(parameter 1, parameter 2, ...)`. Used for checking whether or not a user with the nickname `nick` is who they say they are by checking their `WHOIS` info from the server. If they are verified, the function `callbackApproved` will be called with the parameters `approvedParameters` (which will fill `parameter 1`, `parameter 2`, etc. in order). If they cannot be verified or are not registered, then `callbackDenied` is called with `deniedParameters`. Parameter lists `approvedParameters` and `deniedParameters` are tuples with the tuple items matching the `callbackApproved` and `callbackDenied` function parameters in order from the second parameter. For example, `identify(nick, approved, (string, integer1), denied, (integer2))`. If the nick is verified the following function will be called: `approved(string, integer1)`. Otherwise the other function will be called: `denied(integer2)`
 
     joinchan(channel)
