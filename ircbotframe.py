@@ -310,6 +310,8 @@ class ircBot(threading.Thread):
             if self.outBuf.isInError():
                 self.reconnect(gracefully=False)
 
+        self.disconnect()
+
     def say(self, recipient, message):
         if self.log_own_messages:
             self.log(recipient, 'PRIVMSG', self.name, [recipient], message)
