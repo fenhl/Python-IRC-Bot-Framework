@@ -61,8 +61,6 @@ class ircInputBuffer:
         # Receives new data from the socket and splits it into lines.
         try:
             data = self.buffer + self.irc.recv(4096).decode("utf-8")
-        except socket.error as msg:
-            raise socket.error(msg)
         except UnicodeDecodeError:
             data = ''
         self.lines += data.split("\r\n")
@@ -71,15 +69,18 @@ class ircInputBuffer:
         self.lines = self.lines[:-1]
 
     def getLine(self):
-        # Returns the next line of IRC received by the socket.
+        # Returns the next line of IRC received by the socket or None.
         # This should already be in the standard string format.
-        # If no lines are buffered, this blocks until a line is received.
+        # If no lines are buffered, this blocks until a line is received
+        # or we reach the socket timeout. When the timeout is
+        # reached, the function returns None.
+
         while len(self.lines) == 0:
             try:
                 self.__recv()
-            except socket.error as msg:
-                raise socket.error(msg)
-            time.sleep(1);
+            except socket.timeout:
+                return None
+
         line = self.lines[0]
         self.lines = self.lines[1:]
         return line
@@ -227,6 +228,8 @@ class ircBot(threading.Thread):
     def connect(self):
         self.__debugPrint("Connecting...")
         self.irc = socket.socket(self.socket_family, socket.SOCK_STREAM)
+        self.irc.settimeout(1.0)
+
         if self.ssl:
             self.irc = ssl.wrap_socket(self.irc)
         self.irc.connect((self.network, self.port))
@@ -276,13 +279,16 @@ class ircBot(threading.Thread):
         self.__debugPrint("Bot is now running.")
         self.connect()
         while self.keepGoing:
-            line = ""
-            while len(line) == 0:
-                try:
-                    line = self.inBuf.getLine()
-                except socket.error as msg:
-                    print("Input error", msg)
-                    self.reconnect()
+            line = None
+
+            try:
+                line = self.inBuf.getLine()
+            except socket.error as msg:
+                print("Input error", msg)
+                self.reconnect()
+
+            if line is None:
+                continue
             if line.startswith("PING"):
                 self.outBuf.sendImmediately("PONG " + line.split()[1])
             else:
