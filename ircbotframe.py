@@ -232,11 +232,14 @@ class ircBot(threading.Thread):
 
         if self.ssl:
             self.irc = ssl.wrap_socket(self.irc)
+
         self.irc.connect((self.network, self.port))
         self.inBuf = ircInputBuffer(self.irc)
         self.outBuf = ircOutputBuffer(self.irc)
+
         if self.password is not None:
             self.outBuf.sendBuffered("PASS " + self.password)
+
         self.outBuf.sendBuffered("NICK " + self.name)
         self.outBuf.sendBuffered("USER " + self.name + " 0 * :" + self.desc)
 
@@ -293,6 +296,7 @@ class ircBot(threading.Thread):
                 self.outBuf.sendImmediately("PONG " + line.split()[1])
             else:
                 self.__processLine(line)
+
             if self.outBuf.isInError():
                 self.reconnect()
 
