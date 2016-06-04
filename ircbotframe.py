@@ -112,6 +112,7 @@ class ircBot(threading.Thread):
                 for family, _, _, _, _ in socket.getaddrinfo(network, port, proto=socket.IPPROTO_TCP):
                     if family == socket.AF_INET6:
                         self.socket_family = socket.AF_INET6
+                        break
                 else:
                     self.socket_family = socket.AF_INET
             else:
