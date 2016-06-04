@@ -246,11 +246,16 @@ class ircBot(threading.Thread):
     def debugging(self, state):
         self.debug = state
 
+    def close(self):
+        self.outBuf = None
+        self.inBuf = None
+        self.irc.close()
+
     def disconnect(self, qMessage):
         self.__debugPrint("Disconnecting...")
         # TODO make the following block until the message is sent
         self.outBuf.sendBuffered("QUIT :" + qMessage)
-        self.irc.close()
+        self.close()
 
     def identify(self, nick, approvedFunc, approvedParams, deniedFunc, deniedParams):
         self.__debugPrint("Verifying " + nick + "...")
@@ -272,8 +277,12 @@ class ircBot(threading.Thread):
         self.__debugPrint("Kicking " + nick + "...")
         self.outBuf.sendBuffered("KICK " + channel + " " + nick + " :" + reason)
 
-    def reconnect(self):
-        self.disconnect("Reconnecting")
+    def reconnect(self, gracefully=True):
+        if gracefully:
+            self.disconnect("Reconnecting")
+        else:
+            self.close()
+
         self.__debugPrint("Pausing before reconnecting...")
         time.sleep(5)
         self.connect()
@@ -281,6 +290,7 @@ class ircBot(threading.Thread):
     def run(self):
         self.__debugPrint("Bot is now running.")
         self.connect()
+
         while self.keepGoing:
             line = None
 
@@ -288,7 +298,7 @@ class ircBot(threading.Thread):
                 line = self.inBuf.getLine()
             except socket.error as msg:
                 print("Input error", msg)
-                self.reconnect()
+                self.reconnect(gracefully=False)
 
             if line is None:
                 continue
@@ -298,7 +308,7 @@ class ircBot(threading.Thread):
                 self.__processLine(line)
 
             if self.outBuf.isInError():
-                self.reconnect()
+                self.reconnect(gracefully=False)
 
     def say(self, recipient, message):
         if self.log_own_messages:
