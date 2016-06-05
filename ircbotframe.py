@@ -320,7 +320,7 @@ class ircBot(threading.Thread):
     def disconnect(self, qMessage):
         self.__debugPrint("Disconnecting...")
         # TODO make the following block until the message is sent
-        self.outBuf.sendBuffered("QUIT :" + qMessage)
+        self.send("QUIT :" + qMessage)
         self.close()
 
     def identify(self, nick, approvedFunc, approvedParams, deniedFunc, deniedParams):
@@ -328,7 +328,7 @@ class ircBot(threading.Thread):
         self.identifyNickCommands += [(nick, approvedFunc, approvedParams, deniedFunc, deniedParams)]
         # TODO this doesn't seem right
         if not self.identifyLock:
-            self.outBuf.sendBuffered("WHOIS " + nick)
+            self.send("WHOIS " + nick)
             self.identifyLock = True
 
     def joinchan(self, channel):
@@ -337,11 +337,11 @@ class ircBot(threading.Thread):
             'log': [],
             'log_length': self.default_log_length
         }
-        self.outBuf.sendBuffered("JOIN " + channel)
+        self.send("JOIN " + channel)
 
     def kick(self, nick, channel, reason):
         self.__debugPrint("Kicking " + nick + "...")
-        self.outBuf.sendBuffered("KICK " + channel + " " + nick + " :" + reason)
+        self.send("KICK " + channel + " " + nick + " :" + reason)
 
     def reconnect(self, gracefully=True):
         if gracefully:
@@ -371,9 +371,13 @@ class ircBot(threading.Thread):
     def say(self, recipient, message):
         if self.log_own_messages:
             self.log(recipient, 'PRIVMSG', self.name, [recipient], message)
-        self.outBuf.sendBuffered("PRIVMSG " + recipient + " :" + message)
+        self.send("PRIVMSG " + recipient + " :" + message)
 
     def send(self, string):
+        if not self.connected:
+            self.__debugPrint("WARNING: you are trying to send without being connected - \"", string, "\"")
+            return
+
         self.outBuf.sendBuffered(string)
 
     def stop(self):
@@ -384,4 +388,4 @@ class ircBot(threading.Thread):
 
     def unban(self, banMask, channel):
         self.__debugPrint('Unbanning ' + banMask + '...')
-        self.outBuf.sendBuffered('MODE -b ' + channel + ' ' + banMask)
+        self.send('MODE -b ' + channel + ' ' + banMask)
