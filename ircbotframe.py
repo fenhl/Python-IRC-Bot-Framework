@@ -100,6 +100,11 @@ class ircBot(threading.Thread):
         self.connected = False
         self.connect_timeout = 30
         self.reconnect_interval = 30
+        self.ping_timeout = 10
+        self.ping_interval = 60
+
+        self.bind("PONG", self.__handlePong)
+        self.__unansweredPing = False
         self.__sched = sched.scheduler()
 
         if ip_ver == 4:
@@ -244,6 +249,26 @@ class ircBot(threading.Thread):
         # next recv should be directly but with verly low priority
         self.__sched.enter(0.01, priority=1, action=self.__periodicRecv)
 
+    def __periodicPing(self):
+        self.ping()
+        self.__sched.enter(self.ping_interval, 1, self.__periodicPing)
+
+    def __handlePong(self, sender, headers, message):
+        self.__unansweredPing = False
+
+    def __handlePingTimeout(self):
+        if self.__unansweredPing:
+            self.__debugPrint("Ping timeout reached. Killing the connection.")
+            self.close()
+
+    def ping(self):
+        if self.__unansweredPing:
+            return
+
+        self.outBuf.sendImmediately('PING %s' % self.network)
+        self.__unansweredPing = True
+        self.__sched.enter(self.ping_timeout, 1, self.__handlePingTimeout)
+
     def log(self, channel, msgtype, sender, headers, message):
         if channel in self.channel_data:
             self.channel_data[channel]['log'].append((msgtype, sender, headers, message))
@@ -356,6 +381,8 @@ class ircBot(threading.Thread):
     def run(self):
         self.__debugPrint("Bot is now running.")
         self.connect()
+
+        self.__periodicPing()
 
         while self.keepGoing:
             if self.irc is None:
