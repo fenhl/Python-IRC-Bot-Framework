@@ -42,7 +42,7 @@ This command binds a particular message type `msgtype` (passed as a string) to a
 
     connect()
 
-Makes the bot connect to the specified irc server.
+Makes the bot connect to the specified irc server. This function is blocking until the server sends the end of the motd or the connect_timeout is reached. The return value indicates which case you have (`True` means successful).
 
     debug(state)
 
